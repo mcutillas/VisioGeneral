@@ -1,0 +1,372 @@
+@model VisioGeneral.Web.Models.Entities.Questio
+@{
+    ViewData["Title"] = Model.Titol;
+}
+
+<!-- Missatges -->
+@if (TempData["Missatge"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Missatge"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Capçalera -->
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-action="Index">Qüestions</a></li>
+                <li class="breadcrumb-item active">Detall</li>
+            </ol>
+        </nav>
+        <h1 class="h3 mb-2">@Model.Titol</h1>
+        <div class="d-flex gap-2 align-items-center">
+            @if (Model.Area != null)
+            {
+                <span class="badge-area area-@Model.Area.Codi">@Model.Area.Nom</span>
+            }
+            <span class="badge-prioritat @Model.Prioritat.ToLower()">@Model.Prioritat</span>
+            <span class="badge-estat" style="background-color: @Model.Estat.Color">@Model.Estat.Nom</span>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary">Editar</a>
+        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">Eliminar</a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Columna principal -->
+    <div class="col-lg-8">
+        <!-- Descripció -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Descripció</h5>
+            </div>
+            <div class="card-body">
+                @if (!string.IsNullOrEmpty(Model.Descripcio))
+                {
+                    <p class="mb-0" style="white-space: pre-wrap;">@Model.Descripcio</p>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">Sense descripció</p>
+                }
+            </div>
+        </div>
+
+        <!-- Canvi d'estat -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Canviar estat</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="CanviarEstat" method="post">
+                    <input type="hidden" name="questioId" value="@Model.Id" />
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Nou estat</label>
+                            <select name="nouEstatId" class="form-select" asp-items="@ViewBag.Estats"></select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Director/a</label>
+                            <select name="directorId" class="form-select">
+                                <option value="">-- Selecciona --</option>
+                                @foreach (var dir in (IEnumerable<VisioGeneral.Web.Models.Entities.Director>)ViewBag.Directors)
+                                {
+                                    <option value="@dir.Id">@dir.Nom</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">Canviar</button>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Comentari (opcional)</label>
+                            <textarea name="comentari" class="form-control" rows="2" placeholder="Motiu del canvi..."></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Historial -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Historial de canvis</h5>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.Historial.Any())
+                {
+                    <div class="timeline">
+                        @foreach (var h in Model.Historial)
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-marker"></div>
+                                <div class="timeline-content">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <span class="badge-estat-small" style="background-color: @h.EstatAnterior?.Color">@h.EstatAnterior?.Nom</span>
+                                            <span class="mx-1">→</span>
+                                            <span class="badge-estat-small" style="background-color: @h.EstatNou?.Color">@h.EstatNou?.Nom</span>
+                                        </div>
+                                        <small class="text-muted">@h.DataCanvi.ToString("dd/MM/yyyy HH:mm")</small>
+                                    </div>
+                                    @if (h.Director != null)
+                                    {
+                                        <small class="text-muted">Per: @h.Director.Nom</small>
+                                    }
+                                    @if (!string.IsNullOrEmpty(h.Comentari))
+                                    {
+                                        <p class="mb-0 mt-1 text-muted fst-italic">@h.Comentari</p>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="p-3 mb-0 text-muted">Encara no hi ha canvis d'estat registrats.</p>
+                }
+            </div>
+        </div>
+
+        <!-- Comentaris -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Comentaris (@Model.Comentaris.Count)</h5>
+            </div>
+            <div class="card-body">
+                <!-- Formulari nou comentari -->
+                <form asp-action="AfegirComentari" method="post" class="mb-4">
+                    <input type="hidden" name="questioId" value="@Model.Id" />
+                    <div class="mb-2">
+                        <textarea name="text" class="form-control" rows="2" placeholder="Escriu un comentari..."></textarea>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <select name="directorId" class="form-select w-auto">
+                            <option value="">-- Qui comenta --</option>
+                            @foreach (var dir in (IEnumerable<VisioGeneral.Web.Models.Entities.Director>)ViewBag.Directors)
+                            {
+                                <option value="@dir.Id">@dir.Nom</option>
+                            }
+                        </select>
+                        <button type="submit" class="btn btn-outline-primary btn-sm">Afegir comentari</button>
+                    </div>
+                </form>
+
+                <!-- Llista de comentaris -->
+                @if (Model.Comentaris.Any())
+                {
+                    <div class="comentaris-list">
+                        @foreach (var c in Model.Comentaris)
+                        {
+                            <div class="comentari-item">
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <strong>@(c.Director?.Nom ?? "Anònim")</strong>
+                                    <small class="text-muted">@c.DataCreacio.ToString("dd/MM/yyyy HH:mm")</small>
+                                </div>
+                                <p class="mb-0">@c.Text</p>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">Encara no hi ha comentaris.</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Columna lateral -->
+    <div class="col-lg-4">
+        <!-- Informació -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Informació</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-5">Àrea</dt>
+                    <dd class="col-sm-7">@(Model.Area?.Nom ?? "—")</dd>
+
+                    <dt class="col-sm-5">Programa</dt>
+                    <dd class="col-sm-7">@(Model.Programa?.Nom ?? "—")</dd>
+
+                    @if (Model.Programa?.Servei != null)
+                    {
+                        <dt class="col-sm-5">Servei</dt>
+                        <dd class="col-sm-7">@Model.Programa.Servei.Nom</dd>
+                    }
+
+                    <dt class="col-sm-5">Responsables</dt>
+                    <dd class="col-sm-7">
+                        @if (Model.EsEquip)
+                        {
+                            <span class="text-primary fw-bold"><i class="bi bi-people-fill"></i> Tot l'Equip de Direcció</span>
+                        }
+                        else if (Model.DirectorsResponsables.Any())
+                        {
+                            @string.Join(", ", Model.DirectorsResponsables.Select(qd => qd.Director.Nom))
+                        }
+                        else
+                        {
+                            <span>—</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-5">Creada per</dt>
+                    <dd class="col-sm-7">@(Model.DirectorCreador?.Nom ?? "—")</dd>
+
+                    <dt class="col-sm-5">Data creació</dt>
+                    <dd class="col-sm-7">@Model.DataCreacio.ToString("dd/MM/yyyy")</dd>
+
+                    @if (Model.DataLimitResposta.HasValue)
+                    {
+                        var esPassada = Model.DataLimitResposta.Value < DateOnly.FromDateTime(DateTime.Now);
+                        <dt class="col-sm-5">Data límit</dt>
+                        <dd class="col-sm-7 @(esPassada ? "text-danger fw-bold" : "")">
+                            @Model.DataLimitResposta.Value.ToString("dd/MM/yyyy")
+                            @if (esPassada) { <span>(vençuda)</span> }
+                        </dd>
+                    }
+
+                    @if (Model.DataResolucio.HasValue)
+                    {
+                        <dt class="col-sm-5">Data resolució</dt>
+                        <dd class="col-sm-7 text-success">@Model.DataResolucio.Value.ToString("dd/MM/yyyy")</dd>
+                    }
+
+                    @if (Model.OrigenExtern)
+                    {
+                        <dt class="col-sm-5">Origen extern</dt>
+                        <dd class="col-sm-7">@(Model.FontExterna ?? "Sí")</dd>
+                    }
+                </dl>
+            </div>
+        </div>
+
+        <!-- Òrgans de govern -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Pas per òrgans</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Organs.Any())
+                {
+                    @foreach (var o in Model.Organs.OrderBy(x => x.DataReunio))
+                    {
+                        <div class="organ-item mb-2">
+                            <strong>@o.Organ.Nom</strong>
+                            <small class="text-muted d-block">@o.DataReunio.ToString("dd/MM/yyyy")</small>
+                            @if (!string.IsNullOrEmpty(o.Resultat))
+                            {
+                                <small>@o.Resultat</small>
+                            }
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted mb-0">Encara no s'ha presentat a cap òrgan.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .badge-area {
+            padding: 0.35rem 0.65rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+        }
+        .badge-area.area-COM { background: var(--area-com); }
+        .badge-area.area-INF { background: var(--area-inf); }
+        .badge-area.area-INS { background: var(--area-ins); }
+        .badge-area.area-SAL { background: var(--area-sal); }
+        .badge-area.area-PEN { background: var(--area-pen); }
+        .badge-area.area-ADM { background: var(--area-adm); }
+
+        .badge-estat {
+            padding: 0.35rem 0.65rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .badge-estat-small {
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            color: white;
+        }
+
+        .timeline {
+            position: relative;
+            padding: 1rem;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 25px;
+            padding-bottom: 1rem;
+            border-left: 2px solid #e0e0e0;
+            margin-left: 8px;
+        }
+
+        .timeline-item:last-child {
+            padding-bottom: 0;
+            border-left-color: transparent;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: -7px;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            border: 2px solid white;
+        }
+
+        .timeline-content {
+            padding-left: 0.5rem;
+        }
+
+        .comentaris-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .comentari-item {
+            padding: 0.75rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 3px solid var(--color-primary);
+        }
+
+        .organ-item {
+            padding: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+    </style>
+}

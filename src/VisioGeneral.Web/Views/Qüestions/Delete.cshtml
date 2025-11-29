@@ -1,0 +1,85 @@
+@model VisioGeneral.Web.Models.Entities.Questio
+@{
+    ViewData["Title"] = "Eliminar qüestió";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-action="Index">Qüestions</a></li>
+                <li class="breadcrumb-item active">Eliminar</li>
+            </ol>
+        </nav>
+
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">Confirmar eliminació</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> La qüestió no s'eliminarà definitivament. Quedarà arxivada i es podrà consultar a l'històric.
+                </div>
+
+                <h5 class="mb-3">@Model.Titol</h5>
+
+                <dl class="row">
+                    <dt class="col-sm-4">Prioritat</dt>
+                    <dd class="col-sm-8">
+                        <span class="badge-prioritat @Model.Prioritat.ToLower()">@Model.Prioritat</span>
+                    </dd>
+
+                    <dt class="col-sm-4">Estat</dt>
+                    <dd class="col-sm-8">
+                        <span class="badge" style="background-color: @Model.Estat.Color; color: white;">@Model.Estat.Nom</span>
+                    </dd>
+
+                    @if (Model.Area != null)
+                    {
+                        <dt class="col-sm-4">Àrea</dt>
+                        <dd class="col-sm-8">@Model.Area.Nom</dd>
+                    }
+
+                    @if (Model.Programa != null)
+                    {
+                        <dt class="col-sm-4">Programa</dt>
+                        <dd class="col-sm-8">@Model.Programa.Nom</dd>
+                    }
+
+                    <dt class="col-sm-4">Data creació</dt>
+                    <dd class="col-sm-8">@Model.DataCreacio.ToString("dd/MM/yyyy")</dd>
+                </dl>
+
+                <hr />
+
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" asp-for="Id" />
+
+                    <div class="mb-3">
+                        <label for="directorId" class="form-label">Qui elimina? <span class="text-danger">*</span></label>
+                        <select name="directorId" id="directorId" class="form-select" required>
+                            <option value="">-- Selecciona --</option>
+                            @foreach (var director in ViewBag.Directors as IEnumerable<VisioGeneral.Web.Models.Entities.Director>)
+                            {
+                                <option value="@director.Id">@director.Nom</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="motiuEliminacio" class="form-label">Motiu de l'eliminació <span class="text-danger">*</span></label>
+                        <textarea name="motiuEliminacio" id="motiuEliminacio" class="form-control" rows="3"
+                                  required minlength="10"
+                                  placeholder="Explica breument per què s'elimina aquesta qüestió..."></textarea>
+                        <div class="form-text">Mínim 10 caràcters. Aquest motiu quedarà registrat a l'històric.</div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">Cancel·lar</a>
+                        <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

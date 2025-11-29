@@ -1,0 +1,444 @@
+/* ============================================
+   VisioGeneral - Estils globals
+   GREC - Paleta suau (blaus, verds, liles)
+   ============================================ */
+
+:root {
+    /* Colors principals */
+    --color-primary: #4a6fa5;
+    --color-primary-dark: #3d5a80;
+    --color-text: #333;
+    --color-text-light: #666;
+    --color-bg: #f5f5f5;
+    --color-white: #fff;
+
+    /* Colors d'àrees */
+    --area-com: #5b9aa0;  /* Turquesa apagat */
+    --area-inf: #6b9b7a;  /* Verd salvia */
+    --area-ins: #7a9ec2;  /* Blau acer */
+    --area-sal: #9b8bb4;  /* Lila apagat */
+    --area-pen: #8a9a9e;  /* Gris blavós */
+    --area-adm: #a0927b;  /* Topo/beix */
+
+    /* Colors d'alerta */
+    --color-urgent: #d9534f;
+    --color-success: #5cb85c;
+    --color-warning: #f0ad4e;
+    --color-info: #5bc0de;
+}
+
+html {
+    font-size: 14px;
+    position: relative;
+    min-height: 100%;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--color-bg);
+    color: var(--color-text);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Header */
+.header-grec {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+}
+
+.header-grec .navbar {
+    padding: 0.75rem 1.5rem;
+}
+
+.logo-box {
+    width: 40px;
+    height: 40px;
+    background: var(--color-white);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: var(--color-primary);
+    font-size: 11px;
+}
+
+.brand-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.header-grec .nav-link {
+    color: rgba(255, 255, 255, 0.85) !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.header-grec .nav-link:hover,
+.header-grec .nav-link.active {
+    color: var(--color-white) !important;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Main content */
+.main-content {
+    flex: 1;
+    padding: 1.5rem;
+}
+
+/* Footer */
+.footer-grec {
+    background: var(--color-white);
+    border-top: 1px solid #ddd;
+    padding: 1rem 1.5rem;
+    font-size: 0.85rem;
+    color: var(--color-text-light);
+}
+
+/* Cards de resum */
+.summary-card {
+    background: var(--color-white);
+    border-radius: 10px;
+    padding: 1.25rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+}
+
+.summary-card:hover {
+    transform: translateY(-2px);
+}
+
+.summary-card .number {
+    font-size: 2.25rem;
+    font-weight: bold;
+    color: var(--color-primary-dark);
+    line-height: 1;
+}
+
+.summary-card .label {
+    font-size: 0.85rem;
+    color: var(--color-text-light);
+    margin-top: 0.25rem;
+}
+
+.summary-card.alert-card {
+    border-left: 4px solid var(--color-urgent);
+}
+
+.summary-card.growth-card {
+    border-left: 4px solid var(--area-com);
+}
+
+/* Treemap */
+.treemap-container {
+    background: var(--color-white);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.treemap {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.treemap-row {
+    display: flex;
+    align-items: stretch;
+    gap: 4px;
+}
+
+.treemap-row-label {
+    min-width: 140px;
+    max-width: 140px;
+    padding: 0.75rem;
+    border-radius: 8px;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.treemap-row-label span {
+    font-weight: 600;
+    font-size: 0.8rem;
+    line-height: 1.2;
+}
+
+.treemap-row-label small {
+    font-size: 0.7rem;
+    opacity: 0.85;
+    margin-top: 2px;
+}
+
+.treemap-row-items {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+}
+
+.treemap-item {
+    border-radius: 8px;
+    padding: 0.75rem;
+    color: var(--color-white);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.treemap-item:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    z-index: 10;
+}
+
+.treemap-item .name {
+    font-weight: 600;
+    font-size: 0.8rem;
+    line-height: 1.2;
+}
+
+.treemap-item .count {
+    font-size: 0.7rem;
+    opacity: 0.9;
+}
+
+.treemap-item .badge-urgent {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 18px;
+    height: 18px;
+    background: var(--color-urgent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+.treemap-item .indicator {
+    position: absolute;
+    bottom: 6px;
+    right: 6px;
+    font-size: 14px;
+}
+
+/* Mides dels rectangles del treemap (proporcionals als treballadors) */
+.treemap-size-xs { width: 80px;  height: 55px;  }
+.treemap-size-s  { width: 110px; height: 70px;  }
+.treemap-size-m  { width: 140px; height: 85px;  }
+.treemap-size-l  { width: 175px; height: 100px; }
+.treemap-size-xl { width: 210px; height: 115px; }
+
+.treemap-size-xs .name { font-size: 0.65rem; }
+.treemap-size-s .name  { font-size: 0.7rem; }
+.treemap-size-m .name  { font-size: 0.8rem; }
+.treemap-size-l .name  { font-size: 0.85rem; }
+.treemap-size-xl .name { font-size: 0.9rem; }
+
+.treemap-size-xs .count { font-size: 0.6rem; }
+.treemap-size-s .count  { font-size: 0.65rem; }
+
+/* Bloc consolidat (per ex. Administració) */
+.treemap-consolidated {
+    cursor: default;
+}
+
+.treemap-consolidated:hover {
+    transform: none;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Colors per àrea */
+.area-COM { background: linear-gradient(135deg, var(--area-com) 0%, #4a8389 100%); }
+.area-INF { background: linear-gradient(135deg, var(--area-inf) 0%, #5a8a69 100%); }
+.area-INS { background: linear-gradient(135deg, var(--area-ins) 0%, #6889ad 100%); }
+.area-SAL { background: linear-gradient(135deg, var(--area-sal) 0%, #8678a3 100%); }
+.area-PEN { background: linear-gradient(135deg, var(--area-pen) 0%, #78898d 100%); }
+.area-ADM { background: linear-gradient(135deg, var(--area-adm) 0%, #8f826c 100%); }
+
+/* Llegenda */
+.legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--color-text-light);
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+}
+
+.legend-color.area-COM { background: var(--area-com); }
+.legend-color.area-INF { background: var(--area-inf); }
+.legend-color.area-INS { background: var(--area-ins); }
+.legend-color.area-SAL { background: var(--area-sal); }
+.legend-color.area-PEN { background: var(--area-pen); }
+.legend-color.area-ADM { background: var(--area-adm); }
+
+/* Llista de qüestions */
+.questio-list {
+    background: var(--color-white);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.questio-item {
+    padding: 0.75rem 1rem;
+    border-left: 3px solid var(--color-info);
+    background: #f8f9fa;
+    border-radius: 0 6px 6px 0;
+    margin-bottom: 0.5rem;
+    transition: all 0.2s;
+}
+
+.questio-item:hover {
+    background: #f0f4f8;
+}
+
+.questio-item.urgent {
+    border-left-color: var(--color-urgent);
+    background: #fdf2f2;
+}
+
+.questio-item .title {
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--color-text);
+}
+
+.questio-item .meta {
+    font-size: 0.75rem;
+    color: var(--color-text-light);
+    margin-top: 0.25rem;
+}
+
+/* Badges de prioritat */
+.badge-prioritat {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.badge-prioritat.urgent {
+    background: var(--color-urgent);
+    color: white;
+}
+
+.badge-prioritat.alta {
+    background: var(--color-warning);
+    color: #333;
+}
+
+.badge-prioritat.normal {
+    background: var(--color-info);
+    color: white;
+}
+
+.badge-prioritat.baixa {
+    background: #6c757d;
+    color: white;
+}
+
+/* Section titles */
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .treemap {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .summary-cards {
+        flex-direction: column;
+    }
+}
+
+/* Focus states */
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem var(--color-primary);
+}
+
+/* Panel lateral (per a detalls) */
+.side-panel {
+    position: fixed;
+    top: 0;
+    right: -400px;
+    width: 400px;
+    height: 100vh;
+    background: var(--color-white);
+    box-shadow: -5px 0 20px rgba(0,0,0,0.1);
+    transition: right 0.3s;
+    z-index: 1050;
+    overflow-y: auto;
+}
+
+.side-panel.open {
+    right: 0;
+}
+
+.side-panel-header {
+    padding: 1.25rem;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    background: var(--color-white);
+}
+
+.side-panel-content {
+    padding: 1.25rem;
+}
+
+.side-panel-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #999;
+    line-height: 1;
+}
+
+.side-panel-close:hover {
+    color: var(--color-text);
+}

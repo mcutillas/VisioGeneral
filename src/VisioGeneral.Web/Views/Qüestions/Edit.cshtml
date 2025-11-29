@@ -1,0 +1,141 @@
+@model VisioGeneral.Web.Models.ViewModels.QuestioEditViewModel
+@{
+    ViewData["Title"] = "Editar qüestió";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-action="Index">Qüestions</a></li>
+                <li class="breadcrumb-item"><a asp-action="Details" asp-route-id="@Model.Id">Detall</a></li>
+                <li class="breadcrumb-item active">Editar</li>
+            </ol>
+        </nav>
+
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Editar qüestió</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <!-- Títol -->
+                    <div class="mb-3">
+                        <label asp-for="Titol" class="form-label"></label>
+                        <input asp-for="Titol" class="form-control" />
+                        <span asp-validation-for="Titol" class="text-danger"></span>
+                    </div>
+
+                    <!-- Descripció -->
+                    <div class="mb-3">
+                        <label asp-for="Descripcio" class="form-label"></label>
+                        <textarea asp-for="Descripcio" class="form-control" rows="4"></textarea>
+                        <span asp-validation-for="Descripcio" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <!-- Prioritat -->
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Prioritat" class="form-label"></label>
+                            <select asp-for="Prioritat" class="form-select" asp-items="@ViewBag.Prioritats"></select>
+                            <span asp-validation-for="Prioritat" class="text-danger"></span>
+                        </div>
+
+                        <!-- Data límit -->
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="DataLimitResposta" class="form-label"></label>
+                            <input asp-for="DataLimitResposta" type="date" class="form-control" />
+                            <span asp-validation-for="DataLimitResposta" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Àrea -->
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="AreaId" class="form-label"></label>
+                            <select asp-for="AreaId" class="form-select" asp-items="@ViewBag.Areas">
+                                <option value="">-- Selecciona una àrea --</option>
+                            </select>
+                            <span asp-validation-for="AreaId" class="text-danger"></span>
+                        </div>
+
+                        <!-- Programa -->
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ProgramaId" class="form-label"></label>
+                            <select asp-for="ProgramaId" class="form-select" asp-items="@ViewBag.Programes">
+                                <option value="">-- Selecciona un programa (opcional) --</option>
+                            </select>
+                            <span asp-validation-for="ProgramaId" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Directors responsables (checkboxes) -->
+                    <div class="mb-3">
+                        <label class="form-label">Directors responsables</label>
+                        <div class="card">
+                            <div class="card-body" style="max-height: 200px; overflow-y: auto;">
+                                <!-- Opció Equip -->
+                                <div class="form-check mb-2 pb-2 border-bottom">
+                                    <input asp-for="EsEquip" class="form-check-input" id="esEquip" />
+                                    <label class="form-check-label fw-bold" for="esEquip">
+                                        Tot l'Equip de Direcció
+                                    </label>
+                                    <small class="text-muted d-block">Marca aquesta opció si la qüestió afecta a tota l'entitat</small>
+                                </div>
+                                <!-- Directors individuals -->
+                                @foreach (var director in (IEnumerable<VisioGeneral.Web.Models.Entities.Director>)ViewBag.DirectorsList)
+                                {
+                                    <div class="form-check">
+                                        <input type="checkbox"
+                                               class="form-check-input director-checkbox"
+                                               name="DirectorsResponsablesIds"
+                                               value="@director.Id"
+                                               id="director_@director.Id"
+                                               @(Model.DirectorsResponsablesIds.Contains(director.Id) ? "checked" : "") />
+                                        <label class="form-check-label" for="director_@director.Id">
+                                            @director.NomComplet
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Origen extern -->
+                    <div class="card bg-light mb-3">
+                        <div class="card-body">
+                            <div class="form-check mb-2">
+                                <input asp-for="OrigenExtern" class="form-check-input" id="origenExtern" />
+                                <label class="form-check-label" for="origenExtern">
+                                    Aquesta qüestió prové d'una font externa
+                                </label>
+                            </div>
+                            <div id="fontExternaContainer" style="display: @(Model.OrigenExtern ? "block" : "none");">
+                                <label asp-for="FontExterna" class="form-label"></label>
+                                <input asp-for="FontExterna" class="form-control" placeholder="Ex: Ajuntament de Palma, IMAS, Conselleria..." />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botons -->
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">Cancel·lar</a>
+                        <button type="submit" class="btn btn-primary">Guardar canvis</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.getElementById('origenExtern').addEventListener('change', function() {
+            document.getElementById('fontExternaContainer').style.display = this.checked ? 'block' : 'none';
+        });
+    </script>
+}

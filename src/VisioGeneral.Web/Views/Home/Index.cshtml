@@ -1,0 +1,261 @@
+@model VisioGeneral.Web.Models.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Mapa de l'Entitat";
+}
+
+<!-- Resum global -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-lg">
+        <div class="summary-card">
+            <div class="number">@Model.TotalTreballadors</div>
+            <div class="label">Treballadors</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg">
+        <div class="summary-card">
+            <div class="number">@Model.TotalArees</div>
+            <div class="label">Àrees</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg">
+        <div class="summary-card">
+            <div class="number">@Model.TotalProgrames</div>
+            <div class="label">Programes actius</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg">
+        <div class="summary-card alert-card">
+            <div class="number">@Model.QüestionsUrgents</div>
+            <div class="label">Qüestions urgents</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg">
+        <div class="summary-card growth-card">
+            <div class="number">@Model.LiniesCreixement</div>
+            <div class="label">Línies creixement</div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Treemap principal -->
+    <div class="col-lg-8 mb-4">
+        <div class="treemap-container">
+            <h2 class="section-title">Mapa de l'Entitat · @DateTime.Now.Year</h2>
+
+            @if (Model.Areas.Any())
+            {
+                var maxTreballadors = Model.Areas.SelectMany(a => a.Programes).Max(p => p.NumTreballadors);
+                var minTreballadors = Model.Areas.SelectMany(a => a.Programes).Min(p => p.NumTreballadors);
+
+                <div class="treemap" id="treemap">
+                    @foreach (var area in Model.Areas)
+                    {
+                        <div class="treemap-row">
+                            <div class="treemap-row-label area-@area.Codi">
+                                <span>@area.Nom</span>
+                                <small>@area.Programes.Sum(p => p.NumTreballadors) treb.</small>
+                            </div>
+                            <div class="treemap-row-items">
+                                @foreach (var programa in area.Programes)
+                                {
+                                    var size = CalculateSize(programa.NumTreballadors, minTreballadors, maxTreballadors);
+                                    <div class="treemap-item area-@area.Codi treemap-size-@size"
+                                         data-programa-id="@programa.Id"
+                                         onclick="openProgramaPanel(@programa.Id)">
+                                        <span class="name">@programa.NomCurt</span>
+                                        <span class="count">@programa.NumTreballadors treb.</span>
+
+                                        @if (programa.NumQüestionsUrgents > 0)
+                                        {
+                                            <span class="badge-urgent">@programa.NumQüestionsUrgents</span>
+                                        }
+
+                                        @if (programa.EsLiniaCreixement)
+                                        {
+                                            <span class="indicator" title="Línia de creixement">↗</span>
+                                        }
+                                        else if (programa.EsParat)
+                                        {
+                                            <span class="indicator" title="Programa parat">⏸</span>
+                                        }
+                                        else if (programa.EsNou)
+                                        {
+                                            <span class="indicator" title="Programa nou">🆕</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Llegenda (només símbols) -->
+                <div class="legend">
+                    <div class="legend-item">
+                        <span>↗</span>
+                        <span>Línia creixement</span>
+                    </div>
+                    <div class="legend-item">
+                        <span>⏸</span>
+                        <span>Programa parat</span>
+                    </div>
+                    <div class="legend-item">
+                        <span>🆕</span>
+                        <span>Programa nou</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="badge-urgent" style="position:static;width:16px;height:16px;font-size:9px;">2</span>
+                        <span>Qüestions urgents</span>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    <p>No hi ha dades per mostrar. Executeu els scripts SQL per carregar les dades inicials.</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Panel lateral: Qüestions recents -->
+    <div class="col-lg-4 mb-4">
+        <div class="questio-list">
+            <h3 class="section-title">Qüestions recents</h3>
+
+            @if (Model.QüestionsRecents.Any())
+            {
+                @foreach (var q in Model.QüestionsRecents)
+                {
+                    var isUrgent = q.Prioritat == "Urgent";
+                    <a href="@Url.Action("Details", "Qüestions", new { id = q.Id })" class="text-decoration-none">
+                        <div class="questio-item @(isUrgent ? "urgent" : "")">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <span class="title">@q.Titol</span>
+                                <span class="badge-prioritat @q.Prioritat.ToLower()">@q.Prioritat</span>
+                            </div>
+                            <div class="meta">
+                                @if (!string.IsNullOrEmpty(q.AreaNom))
+                                {
+                                    <span>@q.AreaNom</span>
+                                }
+                                @if (!string.IsNullOrEmpty(q.ProgramaNom))
+                                {
+                                    <span>· @q.ProgramaNom</span>
+                                }
+                                <span>· @q.DataCreacio.ToString("dd/MM/yyyy")</span>
+                            </div>
+                        </div>
+                    </a>
+                }
+
+                <div class="mt-3">
+                    <a href="@Url.Action("Index", "Qüestions")" class="btn btn-outline-primary btn-sm w-100">
+                        Veure totes les qüestions
+                    </a>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted">No hi ha qüestions registrades.</p>
+                <a href="@Url.Action("Create", "Qüestions")" class="btn btn-primary btn-sm">
+                    + Nova qüestió
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Panel de detalls del programa (slide-in) -->
+<div id="programaPanel" class="side-panel">
+    <div class="side-panel-header">
+        <h4 id="panelTitle">Programa</h4>
+        <button class="side-panel-close" onclick="closeProgramaPanel()">&times;</button>
+    </div>
+    <div class="side-panel-content" id="panelContent">
+        <!-- Contingut dinàmic -->
+    </div>
+</div>
+
+@functions {
+    // Retorna una mida de xs a xl basada en el nombre de treballadors
+    // Utilitza arrel quadrada per suavitzar diferències extremes
+    string CalculateSize(int treballadors, int min, int max)
+    {
+        if (max == min) return "m";
+
+        var normalized = (double)(treballadors - min) / (max - min);
+        var smoothed = Math.Sqrt(normalized);
+
+        if (smoothed < 0.2) return "xs";
+        if (smoothed < 0.4) return "s";
+        if (smoothed < 0.6) return "m";
+        if (smoothed < 0.8) return "l";
+        return "xl";
+    }
+}
+
+@section Scripts {
+    <script>
+        function openProgramaPanel(programaId) {
+            const panel = document.getElementById('programaPanel');
+            panel.classList.add('open');
+
+            document.getElementById('panelTitle').textContent = 'Carregant...';
+            document.getElementById('panelContent').innerHTML = '<p>Carregant dades del programa...</p>';
+
+            fetch('/Home/GetProgramaDetails/' + programaId)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('panelTitle').textContent = data.nom;
+                    document.getElementById('panelContent').innerHTML = `
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <div class="summary-card">
+                                    <div class="number">${data.numTreballadors}</div>
+                                    <div class="label">Treballadors</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="summary-card">
+                                    <div class="number">${data.numUsuaris || '—'}</div>
+                                    <div class="label">Usuaris</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Director/a:</strong> ${data.director || 'No assignat'}
+                        </div>
+                        <div class="mb-3">
+                            <strong>Àrea:</strong> ${data.areaNom}
+                        </div>
+                        <div class="mb-3">
+                            <strong>Servei:</strong> ${data.serveiNom}
+                        </div>
+                        <div class="mb-3">
+                            <strong>Estat:</strong> ${data.estat}
+                        </div>
+                    `;
+                })
+                .catch(err => {
+                    document.getElementById('panelContent').innerHTML = '<p class="text-danger">Error carregant dades.</p>';
+                });
+        }
+
+        function closeProgramaPanel() {
+            document.getElementById('programaPanel').classList.remove('open');
+        }
+
+        // Tancar panel clicant fora
+        document.addEventListener('click', function(e) {
+            const panel = document.getElementById('programaPanel');
+            if (panel.classList.contains('open') &&
+                !panel.contains(e.target) &&
+                !e.target.classList.contains('treemap-item') &&
+                !e.target.closest('.treemap-item')) {
+                closeProgramaPanel();
+            }
+        });
+    </script>
+}
