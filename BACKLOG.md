@@ -39,6 +39,15 @@ Darrera actualització: 2025-11-29
 
 ## Pendent de Reflexió / Decisió
 
+### Revisió de l'assignació Directors ↔ Programes
+> **PENDENT**: Cal revisar com s'assignen els programes als directors (o al revés).
+> - Actualment cada programa té un únic director assignat (`Programa.DirectorId`)
+> - Preguntes a respondre:
+>   - Un director pot tenir múltiples programes? (Sí, ja està suportat)
+>   - Un programa pot tenir múltiples directors? (No, només un)
+>   - Cal una relació molts-a-molts com amb les qüestions?
+>   - On es fa l'assignació: des de Programes o des de Directors?
+
 ### Revisió d'Estats i Prioritats
 > **IMPORTANT**: Cal repensar l'estructura d'estats i prioritats. Potser tenim massa opcions o massa dimensions.
 >
