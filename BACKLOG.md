@@ -107,10 +107,10 @@ Darrera actualització: 2025-11-29
 - [ ] Vista de calendari amb dates límit
 
 ### Programes i Àrees
-- [ ] CRUD de Programes
-- [ ] CRUD d'Àrees
-- [ ] CRUD de Serveis
-- [ ] Gestió de Directors
+- [x] CRUD de Programes ✅
+- [x] CRUD d'Àrees ✅
+- [x] CRUD de Serveis ✅
+- [x] Gestió de Directors ✅
 
 ### Autenticació i Seguretat
 - [x] Identificació automàtica del director actual via Windows Auth ✅
@@ -191,3 +191,9 @@ Darrera actualització: 2025-11-29
 - [x] Comentaris niuats estil fòrum (respondre dins d'un comentari)
 - [x] Identificació automàtica del director via Windows Auth (DirectorActualService)
 - [x] Eliminació de dropdowns "Qui" en tots els formularis (auto-omplert)
+- [x] CRUD complet de dades mestres (Directors, Àrees, Serveis, Programes)
+  - Controllers: DirectorsController, AreasController, ServeisController, ProgramesController
+  - Vistes CRUD completes (Index, Create, Edit, Delete) per cada entitat
+  - Menú Administració amb desplegable per accedir a totes les seccions
+  - Comprovació de dependències abans d'eliminar (no es pot eliminar si té registres relacionats)
+  - Opció d'activar/desactivar registres sense eliminar

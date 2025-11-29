@@ -1,0 +1,99 @@
+@model IEnumerable<VisioGeneral.Web.Models.Entities.Area>
+@{
+    ViewData["Title"] = "Àrees";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="section-title mb-0">Àrees</h1>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Nova àrea
+    </a>
+</div>
+
+@if (TempData["Missatge"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Missatge"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 60px">Ordre</th>
+                    <th style="width: 80px">Codi</th>
+                    <th>Nom</th>
+                    <th style="width: 80px">Color</th>
+                    <th class="text-center">Serveis</th>
+                    <th class="text-center">Estat</th>
+                    <th class="text-end">Accions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var area in Model)
+                {
+                    <tr class="@(!area.Activa ? "table-secondary" : "")">
+                        <td>@area.Ordre</td>
+                        <td>
+                            <span class="badge" style="background-color: @area.Color; color: white;">@area.Codi</span>
+                        </td>
+                        <td><strong>@area.Nom</strong></td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div style="width: 24px; height: 24px; background-color: @area.Color; border-radius: 4px; border: 1px solid #ccc;"></div>
+                                <code class="small">@area.Color</code>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-secondary">@area.Serveis.Count</span>
+                        </td>
+                        <td class="text-center">
+                            @if (area.Activa)
+                            {
+                                <span class="badge bg-success">Activa</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Inactiva</span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <a asp-action="Edit" asp-route-id="@area.Id" class="btn btn-outline-primary" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form asp-action="ToggleActiva" asp-route-id="@area.Id" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-outline-secondary" title="@(area.Activa ? "Desactivar" : "Activar")">
+                                        <i class="bi bi-@(area.Activa ? "toggle-on" : "toggle-off")"></i>
+                                    </button>
+                                </form>
+                                <a asp-action="Delete" asp-route-id="@area.Id" class="btn btn-outline-danger" title="Eliminar">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info mt-3">
+        No hi ha àrees registrades. <a asp-action="Create">Crear la primera àrea</a>.
+    </div>
+}

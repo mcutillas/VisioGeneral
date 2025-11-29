@@ -1,0 +1,99 @@
+@model IEnumerable<VisioGeneral.Web.Models.Entities.Director>
+@{
+    ViewData["Title"] = "Directors";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="section-title mb-0">Equip de Direcció</h1>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Nou director/a
+    </a>
+</div>
+
+@if (TempData["Missatge"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Missatge"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Nom</th>
+                    <th>Tipus</th>
+                    <th>Email</th>
+                    <th>Usuari AD</th>
+                    <th class="text-center">Estat</th>
+                    <th class="text-end">Accions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var director in Model)
+                {
+                    <tr class="@(!director.Actiu ? "table-secondary" : "")">
+                        <td>
+                            <strong>@director.NomComplet</strong>
+                        </td>
+                        <td>
+                            @if (director.Tipus == "Gerencia")
+                            {
+                                <span class="badge bg-primary">Gerència</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-info">Tècnic/a</span>
+                            }
+                        </td>
+                        <td>@director.Email</td>
+                        <td><code>@director.UsernameAD</code></td>
+                        <td class="text-center">
+                            @if (director.Actiu)
+                            {
+                                <span class="badge bg-success">Actiu</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Inactiu</span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <a asp-action="Edit" asp-route-id="@director.Id" class="btn btn-outline-primary" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form asp-action="ToggleActiu" asp-route-id="@director.Id" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-outline-secondary" title="@(director.Actiu ? "Desactivar" : "Activar")">
+                                        <i class="bi bi-@(director.Actiu ? "toggle-on" : "toggle-off")"></i>
+                                    </button>
+                                </form>
+                                <a asp-action="Delete" asp-route-id="@director.Id" class="btn btn-outline-danger" title="Eliminar">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info mt-3">
+        No hi ha directors registrats. <a asp-action="Create">Crear el primer director/a</a>.
+    </div>
+}

@@ -1,0 +1,74 @@
+@model VisioGeneral.Web.Models.Entities.Area
+@{
+    ViewData["Title"] = "Eliminar àrea";
+}
+
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Àrees</a></li>
+            <li class="breadcrumb-item active">Eliminar</li>
+        </ol>
+    </nav>
+    <h1 class="section-title text-danger">Eliminar àrea</h1>
+</div>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Error"]
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <i class="bi bi-exclamation-triangle"></i> Confirmar eliminació
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div style="width: 40px; height: 40px; background-color: @Model.Color; border-radius: 8px;"></div>
+                    <div>
+                        <h5 class="card-title mb-0">@Model.Nom</h5>
+                        <span class="badge" style="background-color: @Model.Color;">@Model.Codi</span>
+                    </div>
+                </div>
+
+                @if (ViewBag.TeDependencies)
+                {
+                    <div class="alert alert-warning mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> <strong>Atenció:</strong> Aquesta àrea no es pot eliminar perquè té:
+                        <ul class="mb-0 mt-2">
+                            @if (ViewBag.NumServeis > 0)
+                            {
+                                <li>@ViewBag.NumServeis servei(s) associat(s)</li>
+                            }
+                            @if (ViewBag.NumQuestions > 0)
+                            {
+                                <li>@ViewBag.NumQuestions qüestió(ns) associada(es)</li>
+                            }
+                        </ul>
+                        <p class="mt-2 mb-0">Primer elimina o reassigna aquestes dependències.</p>
+                    </div>
+                }
+            </div>
+            <div class="card-footer">
+                <form asp-action="Delete">
+                    <input type="hidden" asp-for="Id" />
+                    <div class="d-flex gap-2">
+                        @if (!ViewBag.TeDependencies)
+                        {
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash"></i> Sí, eliminar
+                            </button>
+                        }
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            @(ViewBag.TeDependencies ? "Tornar" : "Cancel·lar")
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,73 @@
+@model VisioGeneral.Web.Models.Entities.Servei
+@{
+    ViewData["Title"] = "Nou servei";
+}
+
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Serveis</a></li>
+            <li class="breadcrumb-item active">Nou</li>
+        </ol>
+    </nav>
+    <h1 class="section-title">Nou servei</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form asp-action="Create">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label asp-for="Nom" class="form-label">Nom del servei *</label>
+                            <input asp-for="Nom" class="form-control" placeholder="Ex: Servei d'intervenció comunitària..." />
+                            <span asp-validation-for="Nom" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="AreaId" class="form-label">Àrea *</label>
+                            <select asp-for="AreaId" class="form-select" asp-items="@ViewBag.Areas">
+                                <option value="">Selecciona...</option>
+                            </select>
+                            <span asp-validation-for="AreaId" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Descripcio" class="form-label">Descripció</label>
+                        <textarea asp-for="Descripcio" class="form-control" rows="2" placeholder="Breu descripció del servei..."></textarea>
+                        <span asp-validation-for="Descripcio" class="text-danger"></span>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label asp-for="Ordre" class="form-label">Ordre</label>
+                            <input asp-for="Ordre" class="form-control" type="number" value="@ViewBag.SuggeritOrdre" />
+                            <span asp-validation-for="Ordre" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input asp-for="Actiu" class="form-check-input" checked="checked" />
+                            <label asp-for="Actiu" class="form-check-label">Actiu</label>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i> Crear
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">Cancel·lar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

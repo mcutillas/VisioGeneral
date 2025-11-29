@@ -1,0 +1,73 @@
+@model VisioGeneral.Web.Models.Entities.Servei
+@{
+    ViewData["Title"] = "Eliminar servei";
+}
+
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Serveis</a></li>
+            <li class="breadcrumb-item active">Eliminar</li>
+        </ol>
+    </nav>
+    <h1 class="section-title text-danger">Eliminar servei</h1>
+</div>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Error"]
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <i class="bi bi-exclamation-triangle"></i> Confirmar eliminació
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">@Model.Nom</h5>
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Àrea</dt>
+                    <dd class="col-sm-8">
+                        <span class="badge" style="background-color: @Model.Area.Color; color: white;">@Model.Area.Codi</span>
+                        @Model.Area.Nom
+                    </dd>
+                    @if (!string.IsNullOrEmpty(Model.Descripcio))
+                    {
+                        <dt class="col-sm-4">Descripció</dt>
+                        <dd class="col-sm-8">@Model.Descripcio</dd>
+                    }
+                </dl>
+
+                @if (ViewBag.TeDependencies)
+                {
+                    <div class="alert alert-warning mt-3 mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> <strong>Atenció:</strong> Aquest servei no es pot eliminar perquè té:
+                        <ul class="mb-0 mt-2">
+                            <li>@ViewBag.NumProgrames programa(es) associat(s)</li>
+                        </ul>
+                        <p class="mt-2 mb-0">Primer elimina o reassigna els programes.</p>
+                    </div>
+                }
+            </div>
+            <div class="card-footer">
+                <form asp-action="Delete">
+                    <input type="hidden" asp-for="Id" />
+                    <div class="d-flex gap-2">
+                        @if (!ViewBag.TeDependencies)
+                        {
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash"></i> Sí, eliminar
+                            </button>
+                        }
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            @(ViewBag.TeDependencies ? "Tornar" : "Cancel·lar")
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

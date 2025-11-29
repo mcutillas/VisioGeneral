@@ -1,0 +1,139 @@
+@model IEnumerable<VisioGeneral.Web.Models.Entities.Programa>
+@{
+    ViewData["Title"] = "Programes";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="section-title mb-0">Programes</h1>
+    <a asp-action="Create" asp-route-serveiId="@ViewBag.ServeiIdActual" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Nou programa
+    </a>
+</div>
+
+@if (TempData["Missatge"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Missatge"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Filtres -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">Àrea</label>
+                <select name="areaId" class="form-select" asp-items="@ViewBag.Areas">
+                    <option value="">Totes</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Servei</label>
+                <select name="serveiId" class="form-select" asp-items="@((IEnumerable<SelectListItem>)ViewBag.Serveis)">
+                    <option value="">Tots</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-outline-primary">Filtrar</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Netejar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Àrea</th>
+                    <th>Servei</th>
+                    <th>Programa</th>
+                    <th>Director/a</th>
+                    <th class="text-center">Treballadors</th>
+                    <th class="text-center">Estat</th>
+                    <th class="text-end">Accions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var programa in Model)
+                {
+                    <tr class="@(!programa.Actiu ? "table-secondary" : "")">
+                        <td>
+                            <span class="badge" style="background-color: @programa.Servei.Area.Color; color: white;">@programa.Servei.Area.Codi</span>
+                        </td>
+                        <td class="small text-muted">@programa.Servei.Nom</td>
+                        <td>
+                            <strong>@programa.Nom</strong>
+                            @if (!string.IsNullOrEmpty(programa.NomCurt) && programa.NomCurt != programa.Nom)
+                            {
+                                <br /><small class="text-muted">(@programa.NomCurt)</small>
+                            }
+                            @if (programa.EsNou)
+                            {
+                                <span class="badge bg-success ms-1">Nou</span>
+                            }
+                            @if (programa.EsLiniaCreixement)
+                            {
+                                <span class="badge bg-info ms-1">Creixement</span>
+                            }
+                        </td>
+                        <td>@programa.Director?.NomComplet</td>
+                        <td class="text-center">
+                            <span class="badge bg-secondary">@programa.NumTreballadors</span>
+                        </td>
+                        <td class="text-center">
+                            @{
+                                var badgeClass = programa.Estat switch
+                                {
+                                    "Actiu" => "bg-success",
+                                    "Creixement" => "bg-info",
+                                    "Parat" => "bg-warning text-dark",
+                                    "Finalitzat" => "bg-secondary",
+                                    _ => "bg-secondary"
+                                };
+                            }
+                            <span class="badge @badgeClass">@programa.Estat</span>
+                        </td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <a asp-action="Edit" asp-route-id="@programa.Id" class="btn btn-outline-primary" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form asp-action="ToggleActiu" asp-route-id="@programa.Id" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-outline-secondary" title="@(programa.Actiu ? "Desactivar" : "Activar")">
+                                        <i class="bi bi-@(programa.Actiu ? "toggle-on" : "toggle-off")"></i>
+                                    </button>
+                                </form>
+                                <a asp-action="Delete" asp-route-id="@programa.Id" class="btn btn-outline-danger" title="Eliminar">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info mt-3">
+        No hi ha programes registrats. <a asp-action="Create">Crear el primer programa</a>.
+    </div>
+}
+
+<div class="mt-3 text-muted small">
+    Total: @Model.Count() programes | @Model.Sum(p => p.NumTreballadors) treballadors
+</div>
