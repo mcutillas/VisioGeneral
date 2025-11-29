@@ -1,11 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using VisioGeneral.Web.Data;
+using VisioGeneral.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Configurar Entity Framework amb SQL Server
 builder.Services.AddDbContext<VisioGeneralDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Servei per obtenir el director actual (basat en Windows Auth)
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IDirectorActualService, DirectorActualService>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

@@ -176,21 +176,13 @@
                                                 <!-- Canviar estat -->
                                                 <form asp-action="CanviarEstatSubtasca" method="post" class="mb-3">
                                                     <input type="hidden" name="subtascaId" value="@subtasca.Id" />
+                                                    <input type="hidden" name="directorId" value="@ViewBag.DirectorActualId" />
                                                     <div class="row g-2">
-                                                        <div class="col-md-4">
+                                                        <div class="col-md-8">
                                                             <select name="nouEstat" class="form-select form-select-sm">
                                                                 <option value="Pendent" selected="@(subtasca.Estat == VisioGeneral.Web.Models.Entities.EstatSubtasca.Pendent)">Pendent</option>
                                                                 <option value="EnCurs" selected="@(subtasca.Estat == VisioGeneral.Web.Models.Entities.EstatSubtasca.EnCurs)">En curs</option>
                                                                 <option value="Completada" selected="@(subtasca.Estat == VisioGeneral.Web.Models.Entities.EstatSubtasca.Completada)">Completada</option>
-                                                            </select>
-                                                        </div>
-                                                        <div class="col-md-4">
-                                                            <select name="directorId" class="form-select form-select-sm">
-                                                                <option value="">-- Qui --</option>
-                                                                @foreach (var dir in (IEnumerable<VisioGeneral.Web.Models.Entities.Director>)ViewBag.Directors)
-                                                                {
-                                                                    <option value="@dir.Id">@dir.Nom</option>
-                                                                }
                                                             </select>
                                                         </div>
                                                         <div class="col-md-4">
@@ -205,15 +197,9 @@
                                                 <!-- Afegir comentari de seguiment -->
                                                 <form asp-action="AfegirComentariSubtasca" method="post" class="mb-2">
                                                     <input type="hidden" name="subtascaId" value="@subtasca.Id" />
+                                                    <input type="hidden" name="directorId" value="@ViewBag.DirectorActualId" />
                                                     <div class="input-group input-group-sm">
                                                         <input type="text" name="text" class="form-control" placeholder="Afegir comentari de seguiment..." />
-                                                        <select name="directorId" class="form-select" style="max-width: 120px;">
-                                                            <option value="">Qui</option>
-                                                            @foreach (var dir in (IEnumerable<VisioGeneral.Web.Models.Entities.Director>)ViewBag.Directors)
-                                                            {
-                                                                <option value="@dir.Id">@dir.Nom</option>
-                                                            }
-                                                        </select>
                                                         <button type="submit" class="btn btn-outline-secondary"><i class="bi bi-send"></i></button>
                                                     </div>
                                                 </form>
@@ -256,39 +242,74 @@
         <!-- Comentaris -->
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Comentaris (@Model.Comentaris.Count)</h5>
+                @{
+                    var totalComentaris = Model.Comentaris.Count + Model.Comentaris.Sum(c => c.Respostes.Count);
+                }
+                <h5 class="mb-0">Comentaris (@totalComentaris)</h5>
             </div>
             <div class="card-body">
                 <!-- Formulari nou comentari -->
                 <form asp-action="AfegirComentari" method="post" class="mb-4">
                     <input type="hidden" name="questioId" value="@Model.Id" />
+                    <input type="hidden" name="directorId" value="@ViewBag.DirectorActualId" />
                     <div class="mb-2">
                         <textarea name="text" class="form-control" rows="2" placeholder="Escriu un comentari..."></textarea>
                     </div>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <select name="directorId" class="form-select w-auto">
-                            <option value="">-- Qui comenta --</option>
-                            @foreach (var dir in (IEnumerable<VisioGeneral.Web.Models.Entities.Director>)ViewBag.Directors)
-                            {
-                                <option value="@dir.Id">@dir.Nom</option>
-                            }
-                        </select>
+                    <div class="text-end">
                         <button type="submit" class="btn btn-outline-primary btn-sm">Afegir comentari</button>
                     </div>
                 </form>
 
-                <!-- Llista de comentaris -->
-                @if (Model.Comentaris.Any())
+                <!-- Llista de comentaris (només arrels, sense pare) -->
+                @{
+                    var comentarisArrel = Model.Comentaris.Where(c => c.ComentariPareId == null).ToList();
+                }
+                @if (comentarisArrel.Any())
                 {
                     <div class="comentaris-list">
-                        @foreach (var c in Model.Comentaris)
+                        @foreach (var c in comentarisArrel)
                         {
-                            <div class="comentari-item">
+                            <!-- Comentari principal -->
+                            <div class="comentari-item" id="comentari-@c.Id">
                                 <div class="d-flex justify-content-between align-items-start mb-1">
                                     <strong>@(c.Director?.Nom ?? "Anònim")</strong>
                                     <small class="text-muted">@c.DataCreacio.ToString("dd/MM/yyyy HH:mm")</small>
                                 </div>
-                                <p class="mb-0">@c.Text</p>
+                                <p class="mb-2">@c.Text</p>
+                                <button type="button" class="btn btn-sm btn-link p-0 text-muted btn-respondre"
+                                        data-bs-toggle="collapse" data-bs-target="#resposta-form-@c.Id">
+                                    <i class="bi bi-reply"></i> Respondre
+                                </button>
+
+                                <!-- Formulari de resposta (col·lapsat) -->
+                                <div class="collapse mt-2" id="resposta-form-@c.Id">
+                                    <form asp-action="AfegirComentari" method="post" class="resposta-form">
+                                        <input type="hidden" name="questioId" value="@Model.Id" />
+                                        <input type="hidden" name="comentariPareId" value="@c.Id" />
+                                        <input type="hidden" name="directorId" value="@ViewBag.DirectorActualId" />
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" name="text" class="form-control" placeholder="Escriu una resposta..." />
+                                            <button type="submit" class="btn btn-primary">Enviar</button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <!-- Respostes niuades -->
+                                @if (c.Respostes.Any())
+                                {
+                                    <div class="respostes-niuades mt-2">
+                                        @foreach (var resposta in c.Respostes.OrderBy(r => r.DataCreacio))
+                                        {
+                                            <div class="resposta-item" id="comentari-@resposta.Id">
+                                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                                    <strong>@(resposta.Director?.Nom ?? "Anònim")</strong>
+                                                    <small class="text-muted">@resposta.DataCreacio.ToString("dd/MM/yyyy HH:mm")</small>
+                                                </div>
+                                                <p class="mb-0">@resposta.Text</p>
+                                            </div>
+                                        }
+                                    </div>
+                                }
                             </div>
                         }
                     </div>
@@ -308,20 +329,11 @@
             <div class="card-body">
                 <form asp-action="CanviarEstat" method="post">
                     <input type="hidden" name="questioId" value="@Model.Id" />
+                    <input type="hidden" name="directorId" value="@ViewBag.DirectorActualId" />
                     <div class="row g-3">
-                        <div class="col-md-4">
+                        <div class="col-md-8">
                             <label class="form-label">Nou estat</label>
                             <select name="nouEstatId" class="form-select" asp-items="@ViewBag.Estats"></select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Director/a</label>
-                            <select name="directorId" class="form-select">
-                                <option value="">-- Selecciona --</option>
-                                @foreach (var dir in (IEnumerable<VisioGeneral.Web.Models.Entities.Director>)ViewBag.Directors)
-                                {
-                                    <option value="@dir.Id">@dir.Nom</option>
-                                }
-                            </select>
                         </div>
                         <div class="col-md-4 d-flex align-items-end">
                             <button type="submit" class="btn btn-primary w-100">Canviar</button>
@@ -693,6 +705,39 @@
 
         .subtasca-accions {
             font-size: 0.85rem;
+        }
+
+        /* Estils per respostes niuades */
+        .respostes-niuades {
+            margin-left: 1.5rem;
+            padding-left: 1rem;
+            border-left: 2px solid #dee2e6;
+        }
+
+        .resposta-item {
+            padding: 0.5rem 0.75rem;
+            margin-bottom: 0.5rem;
+            background: #ffffff;
+            border-radius: 6px;
+            border-left: 2px solid #6c757d;
+        }
+
+        .resposta-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .btn-respondre {
+            font-size: 0.8rem;
+        }
+
+        .btn-respondre:hover {
+            text-decoration: underline;
+        }
+
+        .resposta-form {
+            padding: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 6px;
         }
     </style>
 }

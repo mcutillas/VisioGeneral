@@ -54,17 +54,7 @@
 
                 <form asp-action="Delete" method="post">
                     <input type="hidden" asp-for="Id" />
-
-                    <div class="mb-3">
-                        <label for="directorId" class="form-label">Qui elimina? <span class="text-danger">*</span></label>
-                        <select name="directorId" id="directorId" class="form-select" required>
-                            <option value="">-- Selecciona --</option>
-                            @foreach (var director in ViewBag.Directors as IEnumerable<VisioGeneral.Web.Models.Entities.Director>)
-                            {
-                                <option value="@director.Id">@director.Nom</option>
-                            }
-                        </select>
-                    </div>
+                    <input type="hidden" name="directorId" value="@ViewBag.DirectorActualId" />
 
                     <div class="mb-3">
                         <label for="motiuEliminacio" class="form-label">Motiu de l'eliminació <span class="text-danger">*</span></label>

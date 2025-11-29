@@ -95,14 +95,8 @@
                         </div>
                     </div>
 
-                    <!-- Director creador -->
-                    <div class="mb-3">
-                        <label asp-for="DirectorCreadorId" class="form-label"></label>
-                        <select asp-for="DirectorCreadorId" class="form-select" asp-items="@ViewBag.Directors">
-                            <option value="">-- Qui registra la qüestió --</option>
-                        </select>
-                        <span asp-validation-for="DirectorCreadorId" class="text-danger"></span>
-                    </div>
+                    <!-- Director creador (automàtic via Windows Auth) -->
+                    <input type="hidden" asp-for="DirectorCreadorId" value="@ViewBag.DirectorActualId" />
 
                     <!-- Origen extern -->
                     <div class="card bg-light mb-3">

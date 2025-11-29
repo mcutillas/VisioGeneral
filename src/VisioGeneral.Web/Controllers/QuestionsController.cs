@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using VisioGeneral.Web.Data;
 using VisioGeneral.Web.Models.Entities;
 using VisioGeneral.Web.Models.ViewModels;
+using VisioGeneral.Web.Services;
 
 namespace VisioGeneral.Web.Controllers;
 
@@ -11,11 +12,16 @@ public class QüestionsController : Controller
 {
     private readonly VisioGeneralDbContext _context;
     private readonly ILogger<QüestionsController> _logger;
+    private readonly IDirectorActualService _directorActualService;
 
-    public QüestionsController(VisioGeneralDbContext context, ILogger<QüestionsController> logger)
+    public QüestionsController(
+        VisioGeneralDbContext context,
+        ILogger<QüestionsController> logger,
+        IDirectorActualService directorActualService)
     {
         _context = context;
         _logger = logger;
+        _directorActualService = directorActualService;
     }
 
     // GET: Qüestions
@@ -134,6 +140,9 @@ public class QüestionsController : Controller
                 .ThenInclude(h => h.Director)
             .Include(q => q.Comentaris.OrderByDescending(c => c.DataCreacio))
                 .ThenInclude(c => c.Director)
+            .Include(q => q.Comentaris)
+                .ThenInclude(c => c.Respostes.OrderBy(r => r.DataCreacio))
+                    .ThenInclude(r => r.Director)
             .Include(q => q.Organs)
                 .ThenInclude(o => o.Organ)
             .Include(q => q.Subtasques.OrderBy(s => s.Ordre))
@@ -158,6 +167,9 @@ public class QüestionsController : Controller
             .Where(d => d.Actiu)
             .OrderBy(d => d.Nom)
             .ToListAsync();
+
+        // Obtenir director actual
+        ViewBag.DirectorActualId = await _directorActualService.ObtenirDirectorActualIdAsync();
 
         return View(questio);
     }
@@ -392,7 +404,7 @@ public class QüestionsController : Controller
     // POST: Qüestions/AfegirComentari
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> AfegirComentari(int questioId, string text, int? directorId)
+    public async Task<IActionResult> AfegirComentari(int questioId, string text, int? directorId, int? comentariPareId)
     {
         if (string.IsNullOrWhiteSpace(text))
         {
@@ -405,13 +417,14 @@ public class QüestionsController : Controller
             QuestioId = questioId,
             Text = text,
             DirectorId = directorId,
+            ComentariPareId = comentariPareId,
             DataCreacio = DateTime.Now
         };
 
         _context.ComentarisQuestio.Add(comentari);
         await _context.SaveChangesAsync();
 
-        TempData["Missatge"] = "Comentari afegit correctament.";
+        TempData["Missatge"] = comentariPareId.HasValue ? "Resposta afegida correctament." : "Comentari afegit correctament.";
         return RedirectToAction(nameof(Details), new { id = questioId });
     }
 
@@ -438,6 +451,9 @@ public class QüestionsController : Controller
             .Where(d => d.Actiu)
             .OrderBy(d => d.Nom)
             .ToListAsync();
+
+        // Obtenir director actual
+        ViewBag.DirectorActualId = await _directorActualService.ObtenirDirectorActualIdAsync();
 
         return View(questio);
     }
@@ -753,5 +769,8 @@ public class QüestionsController : Controller
         ViewBag.Estats = new SelectList(
             await _context.EstatsQuestio.OrderBy(e => e.Ordre).ToListAsync(),
             "Id", "Nom");
+
+        // Obtenir director actual (per auto-omplir formularis)
+        ViewBag.DirectorActualId = await _directorActualService.ObtenirDirectorActualIdAsync();
     }
 }

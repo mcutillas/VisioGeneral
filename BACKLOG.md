@@ -76,10 +76,11 @@ Darrera actualització: 2025-11-29
   - Vistes actualitzades per mostrar múltiples responsables
 
 #### Complexitat Mitjana-Alta
-- [ ] **Comentaris niuats (estil fòrum)** - Poder respondre dins d'un comentari
-  - Afegir camp `ComentariPareId` a `ComentariQuestio`
-  - Modificar vista per mostrar comentaris en arbre
-  - Afegir botó "Respondre" a cada comentari
+- [x] **Comentaris niuats (estil fòrum)** - Poder respondre dins d'un comentari ✅
+  - Camp `ComentariPareId` afegit a `ComentariQuestio` amb FK autoreferencial
+  - Vista de detall amb comentaris en arbre (comentaris arrel + respostes niuades)
+  - Botó "Respondre" a cada comentari amb formulari desplegable
+  - Estils visuals per diferenciar comentaris i respostes
 
 ---
 
@@ -112,7 +113,7 @@ Darrera actualització: 2025-11-29
 - [ ] Gestió de Directors
 
 ### Autenticació i Seguretat
-- [ ] Integració amb Windows AD (Active Directory)
+- [x] Identificació automàtica del director actual via Windows Auth ✅
 - [ ] Rols i permisos per director/àrea
 - [ ] Auditoria de canvis (qui va fer què i quan)
 
@@ -187,3 +188,6 @@ Darrera actualització: 2025-11-29
 - [x] Comentaris de seguiment per subtasques
 - [x] Reorganització de la vista de detalls (descripció a columna lateral)
 - [x] Simplificació del menú de navegació
+- [x] Comentaris niuats estil fòrum (respondre dins d'un comentari)
+- [x] Identificació automàtica del director via Windows Auth (DirectorActualService)
+- [x] Eliminació de dropdowns "Qui" en tots els formularis (auto-omplert)

@@ -11,7 +11,15 @@
       "Bash(sqlcmd:*)",
       "Bash(taskkill:*)",
       "Bash(git init:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nVersió inicial de VisioGeneral - Sistema de gestió de qüestions per GREC\n\nFuncionalitats implementades:\n- CRUD complet de qüestions amb soft delete\n- Assignació múltiple de directors responsables\n- Opció \"Equip\" per qüestions globals\n- Vista històric per qüestions resoltes/eliminades\n- Canvi d''estat amb historial\n- Comentaris a les qüestions\n- Filtres i cerca per àrea, estat, prioritat\n- Dashboard inicial\n\nTecnologies: ASP.NET Core 8.0, Entity Framework Core, SQL Server\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(winget install:*)",
+      "Bash(git config:*)",
+      "Bash(dir \"C:\\Users\\maria\\source\\repos\" /b)",
+      "Bash(git remote add:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
