@@ -47,19 +47,255 @@
 <div class="row">
     <!-- Columna principal -->
     <div class="col-lg-8">
-        <!-- Descripció -->
+        <!-- Subtasques -->
+        @{
+            var totalSubtasques = Model.Subtasques.Count;
+            var completades = Model.Subtasques.Count(s => s.EstaCompletada);
+            var percentatge = totalSubtasques > 0 ? (completades * 100 / totalSubtasques) : 0;
+        }
         <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Descripció</h5>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    Subtasques
+                    @if (totalSubtasques > 0)
+                    {
+                        <span class="badge bg-secondary ms-2">@completades / @totalSubtasques</span>
+                    }
+                </h5>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#formNovaSubtasca">
+                    + Nova subtasca
+                </button>
             </div>
             <div class="card-body">
-                @if (!string.IsNullOrEmpty(Model.Descripcio))
+                <!-- Barra de progrés -->
+                @if (totalSubtasques > 0)
                 {
-                    <p class="mb-0" style="white-space: pre-wrap;">@Model.Descripcio</p>
+                    <div class="progress mb-3" style="height: 8px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: @percentatge%"
+                             aria-valuenow="@percentatge" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                }
+
+                <!-- Formulari nova subtasca (col·lapsat per defecte) -->
+                <div class="collapse mb-3" id="formNovaSubtasca">
+                    <div class="card card-body bg-light">
+                        <form asp-action="AfegirSubtasca" method="post">
+                            <input type="hidden" name="questioId" value="@Model.Id" />
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <input type="text" name="titol" class="form-control" placeholder="Títol de la subtasca *" required />
+                                </div>
+                                <div class="col-md-3">
+                                    <select name="directorAssignatId" class="form-select">
+                                        <option value="">-- Responsable --</option>
+                                        @foreach (var dir in (IEnumerable<VisioGeneral.Web.Models.Entities.Director>)ViewBag.Directors)
+                                        {
+                                            <option value="@dir.Id">@dir.Nom</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="date" name="dataLimit" class="form-control" placeholder="Data límit" />
+                                </div>
+                                <div class="col-12">
+                                    <textarea name="descripcio" class="form-control" rows="2" placeholder="Descripció (opcional)"></textarea>
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary btn-sm">Afegir subtasca</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Llista de subtasques -->
+                @if (Model.Subtasques.Any())
+                {
+                    <div class="subtasques-list">
+                        @foreach (var subtasca in Model.Subtasques)
+                        {
+                            var estatClass = subtasca.Estat.ToString().ToLower();
+                            <div class="subtasca-item estat-@estatClass">
+                                <div class="d-flex align-items-start gap-2">
+                                    <!-- Indicador d'estat visual -->
+                                    <div class="estat-indicator estat-@estatClass" title="@subtasca.Estat">
+                                        @if (subtasca.Estat == VisioGeneral.Web.Models.Entities.EstatSubtasca.Completada)
+                                        {
+                                            <i class="bi bi-check-circle-fill"></i>
+                                        }
+                                        else if (subtasca.Estat == VisioGeneral.Web.Models.Entities.EstatSubtasca.EnCurs)
+                                        {
+                                            <i class="bi bi-play-circle-fill"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-circle"></i>
+                                        }
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <span class="subtasca-titol @(subtasca.EstaCompletada ? "text-decoration-line-through text-muted" : "")">
+                                                @subtasca.Titol
+                                            </span>
+                                            <div class="d-flex gap-2 align-items-center">
+                                                @if (subtasca.DataLimit.HasValue)
+                                                {
+                                                    var esPassada = subtasca.DataLimit.Value < DateOnly.FromDateTime(DateTime.Now) && !subtasca.EstaCompletada;
+                                                    <small class="@(esPassada ? "text-danger" : "text-muted")">
+                                                        <i class="bi bi-calendar3"></i> @subtasca.DataLimit.Value.ToString("dd/MM")
+                                                    </small>
+                                                }
+                                                <form asp-action="EliminarSubtasca" method="post" class="d-inline" onsubmit="return confirm('Segur que vols eliminar aquesta subtasca?');">
+                                                    <input type="hidden" name="subtascaId" value="@subtasca.Id" />
+                                                    <button type="submit" class="btn btn-sm p-0 text-danger" title="Eliminar">
+                                                        <i class="bi bi-x-lg"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                        @if (subtasca.DirectorAssignat != null)
+                                        {
+                                            <small class="text-primary"><i class="bi bi-person"></i> @subtasca.DirectorAssignat.Nom</small>
+                                        }
+                                        @if (!string.IsNullOrEmpty(subtasca.Descripcio))
+                                        {
+                                            <p class="mb-0 mt-1 text-muted small">@subtasca.Descripcio</p>
+                                        }
+
+                                        <!-- Canvi d'estat i comentaris -->
+                                        <div class="mt-2 subtasca-accions">
+                                            <button class="btn btn-sm btn-link p-0 text-muted" type="button"
+                                                    data-bs-toggle="collapse" data-bs-target="#subtasca-@subtasca.Id">
+                                                <i class="bi bi-chevron-down"></i> Accions i seguiment
+                                                @if (subtasca.Comentaris.Any())
+                                                {
+                                                    <span class="badge bg-info ms-1">@subtasca.Comentaris.Count</span>
+                                                }
+                                            </button>
+                                            <div class="collapse mt-2" id="subtasca-@subtasca.Id">
+                                                <!-- Canviar estat -->
+                                                <form asp-action="CanviarEstatSubtasca" method="post" class="mb-3">
+                                                    <input type="hidden" name="subtascaId" value="@subtasca.Id" />
+                                                    <div class="row g-2">
+                                                        <div class="col-md-4">
+                                                            <select name="nouEstat" class="form-select form-select-sm">
+                                                                <option value="Pendent" selected="@(subtasca.Estat == VisioGeneral.Web.Models.Entities.EstatSubtasca.Pendent)">Pendent</option>
+                                                                <option value="EnCurs" selected="@(subtasca.Estat == VisioGeneral.Web.Models.Entities.EstatSubtasca.EnCurs)">En curs</option>
+                                                                <option value="Completada" selected="@(subtasca.Estat == VisioGeneral.Web.Models.Entities.EstatSubtasca.Completada)">Completada</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <select name="directorId" class="form-select form-select-sm">
+                                                                <option value="">-- Qui --</option>
+                                                                @foreach (var dir in (IEnumerable<VisioGeneral.Web.Models.Entities.Director>)ViewBag.Directors)
+                                                                {
+                                                                    <option value="@dir.Id">@dir.Nom</option>
+                                                                }
+                                                            </select>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <button type="submit" class="btn btn-sm btn-primary w-100">Canviar</button>
+                                                        </div>
+                                                        <div class="col-12">
+                                                            <input type="text" name="comentari" class="form-control form-control-sm" placeholder="Comentari opcional..." />
+                                                        </div>
+                                                    </div>
+                                                </form>
+
+                                                <!-- Afegir comentari de seguiment -->
+                                                <form asp-action="AfegirComentariSubtasca" method="post" class="mb-2">
+                                                    <input type="hidden" name="subtascaId" value="@subtasca.Id" />
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" name="text" class="form-control" placeholder="Afegir comentari de seguiment..." />
+                                                        <select name="directorId" class="form-select" style="max-width: 120px;">
+                                                            <option value="">Qui</option>
+                                                            @foreach (var dir in (IEnumerable<VisioGeneral.Web.Models.Entities.Director>)ViewBag.Directors)
+                                                            {
+                                                                <option value="@dir.Id">@dir.Nom</option>
+                                                            }
+                                                        </select>
+                                                        <button type="submit" class="btn btn-outline-secondary"><i class="bi bi-send"></i></button>
+                                                    </div>
+                                                </form>
+
+                                                <!-- Historial de comentaris -->
+                                                @if (subtasca.Comentaris.Any())
+                                                {
+                                                    <div class="comentaris-subtasca">
+                                                        @foreach (var c in subtasca.Comentaris)
+                                                        {
+                                                            <div class="comentari-subtasca-item">
+                                                                <div class="d-flex justify-content-between">
+                                                                    <small class="fw-bold">@(c.Director?.Nom ?? "Anònim")</small>
+                                                                    <small class="text-muted">@c.DataCreacio.ToString("dd/MM HH:mm")</small>
+                                                                </div>
+                                                                <small>@c.Text</small>
+                                                                @if (c.EstatEnComentari.HasValue)
+                                                                {
+                                                                    <span class="badge badge-estat-@c.EstatEnComentari.ToString()!.ToLower() ms-1">@c.EstatEnComentari</span>
+                                                                }
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
                 }
                 else
                 {
-                    <p class="text-muted mb-0">Sense descripció</p>
+                    <p class="text-muted mb-0">Aquesta qüestió encara no té subtasques definides.</p>
+                }
+            </div>
+        </div>
+
+        <!-- Comentaris -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Comentaris (@Model.Comentaris.Count)</h5>
+            </div>
+            <div class="card-body">
+                <!-- Formulari nou comentari -->
+                <form asp-action="AfegirComentari" method="post" class="mb-4">
+                    <input type="hidden" name="questioId" value="@Model.Id" />
+                    <div class="mb-2">
+                        <textarea name="text" class="form-control" rows="2" placeholder="Escriu un comentari..."></textarea>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <select name="directorId" class="form-select w-auto">
+                            <option value="">-- Qui comenta --</option>
+                            @foreach (var dir in (IEnumerable<VisioGeneral.Web.Models.Entities.Director>)ViewBag.Directors)
+                            {
+                                <option value="@dir.Id">@dir.Nom</option>
+                            }
+                        </select>
+                        <button type="submit" class="btn btn-outline-primary btn-sm">Afegir comentari</button>
+                    </div>
+                </form>
+
+                <!-- Llista de comentaris -->
+                @if (Model.Comentaris.Any())
+                {
+                    <div class="comentaris-list">
+                        @foreach (var c in Model.Comentaris)
+                        {
+                            <div class="comentari-item">
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <strong>@(c.Director?.Nom ?? "Anònim")</strong>
+                                    <small class="text-muted">@c.DataCreacio.ToString("dd/MM/yyyy HH:mm")</small>
+                                </div>
+                                <p class="mb-0">@c.Text</p>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">Encara no hi ha comentaris.</p>
                 }
             </div>
         </div>
@@ -140,53 +376,6 @@
                 }
             </div>
         </div>
-
-        <!-- Comentaris -->
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Comentaris (@Model.Comentaris.Count)</h5>
-            </div>
-            <div class="card-body">
-                <!-- Formulari nou comentari -->
-                <form asp-action="AfegirComentari" method="post" class="mb-4">
-                    <input type="hidden" name="questioId" value="@Model.Id" />
-                    <div class="mb-2">
-                        <textarea name="text" class="form-control" rows="2" placeholder="Escriu un comentari..."></textarea>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <select name="directorId" class="form-select w-auto">
-                            <option value="">-- Qui comenta --</option>
-                            @foreach (var dir in (IEnumerable<VisioGeneral.Web.Models.Entities.Director>)ViewBag.Directors)
-                            {
-                                <option value="@dir.Id">@dir.Nom</option>
-                            }
-                        </select>
-                        <button type="submit" class="btn btn-outline-primary btn-sm">Afegir comentari</button>
-                    </div>
-                </form>
-
-                <!-- Llista de comentaris -->
-                @if (Model.Comentaris.Any())
-                {
-                    <div class="comentaris-list">
-                        @foreach (var c in Model.Comentaris)
-                        {
-                            <div class="comentari-item">
-                                <div class="d-flex justify-content-between align-items-start mb-1">
-                                    <strong>@(c.Director?.Nom ?? "Anònim")</strong>
-                                    <small class="text-muted">@c.DataCreacio.ToString("dd/MM/yyyy HH:mm")</small>
-                                </div>
-                                <p class="mb-0">@c.Text</p>
-                            </div>
-                        }
-                    </div>
-                }
-                else
-                {
-                    <p class="text-muted mb-0">Encara no hi ha comentaris.</p>
-                }
-            </div>
-        </div>
     </div>
 
     <!-- Columna lateral -->
@@ -254,6 +443,23 @@
                         <dd class="col-sm-7">@(Model.FontExterna ?? "Sí")</dd>
                     }
                 </dl>
+            </div>
+        </div>
+
+        <!-- Descripció -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Descripció</h5>
+            </div>
+            <div class="card-body">
+                @if (!string.IsNullOrEmpty(Model.Descripcio))
+                {
+                    <p class="mb-0" style="white-space: pre-wrap;">@Model.Descripcio</p>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">Sense descripció</p>
+                }
             </div>
         </div>
 
@@ -367,6 +573,126 @@
             padding: 0.5rem;
             background: #f8f9fa;
             border-radius: 6px;
+        }
+
+        .subtasques-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .subtasca-item {
+            padding: 0.75rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 3px solid var(--color-primary);
+            transition: all 0.2s ease;
+        }
+
+        .subtasca-item:hover {
+            background: #f0f4f8;
+        }
+
+        .subtasca-item.completada {
+            border-left-color: #198754;
+            background: #f8fff8;
+        }
+
+        .checkbox-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .checkbox-btn:hover {
+            opacity: 0.8;
+        }
+
+        .subtasca-titol {
+            font-weight: 500;
+        }
+
+        /* Indicadors d'estat de subtasques */
+        .estat-indicator {
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        .estat-indicator.estat-pendent {
+            color: #6c757d;
+        }
+
+        .estat-indicator.estat-encurs {
+            color: #0d6efd;
+        }
+
+        .estat-indicator.estat-completada {
+            color: #198754;
+        }
+
+        /* Estils de subtasca segons estat */
+        .subtasca-item.estat-pendent {
+            border-left-color: #6c757d;
+        }
+
+        .subtasca-item.estat-encurs {
+            border-left-color: #0d6efd;
+            background: #f0f7ff;
+        }
+
+        .subtasca-item.estat-completada {
+            border-left-color: #198754;
+            background: #f0fff4;
+        }
+
+        /* Comentaris de subtasques */
+        .comentaris-subtasca {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .comentari-subtasca-item {
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            background: white;
+            border-radius: 4px;
+            border-left: 2px solid #dee2e6;
+            font-size: 0.85rem;
+        }
+
+        .comentari-subtasca-item:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Badges d'estat en comentaris */
+        .badge-estat-pendent {
+            background-color: #6c757d;
+            color: white;
+            padding: 0.15rem 0.35rem;
+            border-radius: 3px;
+            font-size: 0.7rem;
+        }
+
+        .badge-estat-encurs {
+            background-color: #0d6efd;
+            color: white;
+            padding: 0.15rem 0.35rem;
+            border-radius: 3px;
+            font-size: 0.7rem;
+        }
+
+        .badge-estat-completada {
+            background-color: #198754;
+            color: white;
+            padding: 0.15rem 0.35rem;
+            border-radius: 3px;
+            font-size: 0.7rem;
+        }
+
+        .subtasca-accions {
+            font-size: 0.85rem;
         }
     </style>
 }

@@ -136,6 +136,11 @@ public class QüestionsController : Controller
                 .ThenInclude(c => c.Director)
             .Include(q => q.Organs)
                 .ThenInclude(o => o.Organ)
+            .Include(q => q.Subtasques.OrderBy(s => s.Ordre))
+                .ThenInclude(s => s.DirectorAssignat)
+            .Include(q => q.Subtasques)
+                .ThenInclude(s => s.Comentaris.OrderByDescending(c => c.DataCreacio))
+                    .ThenInclude(c => c.Director)
             .FirstOrDefaultAsync(q => q.Id == id && !q.Eliminada);
 
         if (questio == null)
@@ -583,6 +588,134 @@ public class QüestionsController : Controller
         }
 
         return View(questio);
+    }
+
+    // POST: Qüestions/AfegirSubtasca
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AfegirSubtasca(int questioId, string titol, string? descripcio, int? directorAssignatId, DateOnly? dataLimit)
+    {
+        if (string.IsNullOrWhiteSpace(titol))
+        {
+            TempData["Error"] = "El títol de la subtasca és obligatori.";
+            return RedirectToAction(nameof(Details), new { id = questioId });
+        }
+
+        var questio = await _context.Questions.FindAsync(questioId);
+        if (questio == null || questio.Eliminada)
+        {
+            return NotFound();
+        }
+
+        // Obtenir l'ordre màxim actual
+        var maxOrdre = await _context.Subtasques
+            .Where(s => s.QuestioId == questioId)
+            .MaxAsync(s => (int?)s.Ordre) ?? 0;
+
+        var subtasca = new Subtasca
+        {
+            Titol = titol,
+            Descripcio = descripcio,
+            QuestioId = questioId,
+            DirectorAssignatId = directorAssignatId,
+            DataLimit = dataLimit,
+            Ordre = maxOrdre + 1,
+            DataCreacio = DateTime.Now
+        };
+
+        _context.Subtasques.Add(subtasca);
+        await _context.SaveChangesAsync();
+
+        TempData["Missatge"] = "Subtasca afegida correctament.";
+        return RedirectToAction(nameof(Details), new { id = questioId });
+    }
+
+    // POST: Qüestions/CanviarEstatSubtasca
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CanviarEstatSubtasca(int subtascaId, EstatSubtasca nouEstat, string? comentari, int? directorId)
+    {
+        var subtasca = await _context.Subtasques
+            .Include(s => s.Questio)
+            .FirstOrDefaultAsync(s => s.Id == subtascaId);
+
+        if (subtasca == null)
+        {
+            return NotFound();
+        }
+
+        subtasca.Estat = nouEstat;
+        subtasca.DataCompletada = nouEstat == EstatSubtasca.Completada ? DateTime.Now : null;
+
+        // Si hi ha comentari, afegir-lo
+        if (!string.IsNullOrWhiteSpace(comentari))
+        {
+            var comentariSubtasca = new ComentariSubtasca
+            {
+                Text = comentari,
+                SubtascaId = subtascaId,
+                DirectorId = directorId,
+                EstatEnComentari = nouEstat,
+                DataCreacio = DateTime.Now
+            };
+            _context.ComentarisSubtasca.Add(comentariSubtasca);
+        }
+
+        await _context.SaveChangesAsync();
+
+        return RedirectToAction(nameof(Details), new { id = subtasca.QuestioId });
+    }
+
+    // POST: Qüestions/AfegirComentariSubtasca
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AfegirComentariSubtasca(int subtascaId, string text, int? directorId)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            TempData["Error"] = "El comentari no pot estar buit.";
+            var sub = await _context.Subtasques.FindAsync(subtascaId);
+            return RedirectToAction(nameof(Details), new { id = sub?.QuestioId });
+        }
+
+        var subtasca = await _context.Subtasques.FindAsync(subtascaId);
+        if (subtasca == null)
+        {
+            return NotFound();
+        }
+
+        var comentari = new ComentariSubtasca
+        {
+            Text = text,
+            SubtascaId = subtascaId,
+            DirectorId = directorId,
+            DataCreacio = DateTime.Now
+        };
+
+        _context.ComentarisSubtasca.Add(comentari);
+        await _context.SaveChangesAsync();
+
+        TempData["Missatge"] = "Comentari afegit a la subtasca.";
+        return RedirectToAction(nameof(Details), new { id = subtasca.QuestioId });
+    }
+
+    // POST: Qüestions/EliminarSubtasca
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EliminarSubtasca(int subtascaId)
+    {
+        var subtasca = await _context.Subtasques.FindAsync(subtascaId);
+        if (subtasca == null)
+        {
+            return NotFound();
+        }
+
+        var questioId = subtasca.QuestioId;
+        _context.Subtasques.Remove(subtasca);
+        await _context.SaveChangesAsync();
+
+        TempData["Missatge"] = "Subtasca eliminada correctament.";
+        return RedirectToAction(nameof(Details), new { id = questioId });
     }
 
     // Mètode auxiliar per carregar dades dels desplegables

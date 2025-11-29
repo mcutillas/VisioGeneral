@@ -49,6 +49,7 @@ public class Questio
     public ICollection<ComentariQuestio> Comentaris { get; set; } = new List<ComentariQuestio>();
     public ICollection<QuestioOrgan> Organs { get; set; } = new List<QuestioOrgan>();
     public ICollection<QuestioDirector> DirectorsResponsables { get; set; } = new List<QuestioDirector>();
+    public ICollection<Subtasca> Subtasques { get; set; } = new List<Subtasca>();
 
     // Helpers
     public bool EsUrgent => Prioritat == "Urgent";

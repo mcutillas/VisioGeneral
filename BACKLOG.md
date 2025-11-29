@@ -4,6 +4,39 @@ Darrera actualització: 2025-11-29
 
 ---
 
+## Noves Funcionalitats Proposades (29/11/2025)
+
+### 1. Qüestions Recurrents / Cícliques (Complexitat Alta)
+> **Context**: Dins de l'àrea administrativa hi ha qüestions que es repeteixen cada any o en cicles regulars: controls de pressupost, pressupostos provisionals, revisions de qualitat, revisions de Fundació Lealtad, xarxes en què es participa, negociació de preus de serveis, etc.
+>
+> Aquestes no són tasques "noves" sinó processos habituals que generen "coses per pensar" i poden tenir dates d'inici/fi previsibles.
+>
+> **Proposta de solució**:
+> - Afegir camp `EsRecurrent` (bool) a Qüestió
+> - Afegir camps `Periodicitat` (Anual, Trimestral, Mensual, Puntual) i `MesProgramat` (per saber quan toca)
+> - Crear vista "Calendari anual de qüestions recurrents"
+> - Opció de "Reobrir" una qüestió recurrent quan arribi el seu cicle
+> - O bé: crear automàticament una nova instància quan s'acosta la data
+>
+> **Alternativa més simple**:
+> - Crear una secció separada "Processos habituals" que no es barregi amb les qüestions "grans"
+> - Cada procés té un checklist anual que es reinicia cada any
+
+### ~~2. Subtasques dins d'una Qüestió~~ ✅ COMPLETAT (29/11/2025)
+> Implementat sistema complet de subtasques dins de cada qüestió:
+> - Nova entitat `Subtasca` amb camps: Títol, Descripció, DirectorAssignat, Estat, DataLimit, Ordre
+> - Sistema d'estats: Pendent, En Curs, Completada (amb indicadors visuals de color)
+> - Nova entitat `ComentariSubtasca` per comentaris de seguiment
+> - Vista de detall amb llista de subtasques amb indicadors d'estat
+> - Indicador de progrés visual (barra + comptador "3/7")
+> - Formulari desplegable per afegir noves subtasques
+> - Secció "Accions i seguiment" per canviar estat i afegir comentaris
+> - Assignació de responsable individual per subtasca
+> - Data límit opcional amb indicador visual de vençuda
+> - Historial de comentaris amb badge d'estat quan es fa canvi
+
+---
+
 ## Pendent de Reflexió / Decisió
 
 ### Revisió d'Estats i Prioritats
@@ -36,10 +69,11 @@ Darrera actualització: 2025-11-29
 ### Pendents (ordenades per complexitat)
 
 #### Complexitat Mitjana
-- [ ] **Múltiples directors responsables** - Poder assignar més d'un director a una qüestió
-  - Crear taula intermèdia `QuestioDirector`
-  - Modificar formularis per permetre selecció múltiple
-  - Actualitzar vistes per mostrar múltiples responsables
+- [x] **Múltiples directors responsables** - Poder assignar més d'un director a una qüestió ✅
+  - Taula intermèdia `QuestioDirector` creada
+  - Formularis amb checkboxes per selecció múltiple
+  - Opció "Tot l'Equip de Direcció" per qüestions globals
+  - Vistes actualitzades per mostrar múltiples responsables
 
 #### Complexitat Mitjana-Alta
 - [ ] **Comentaris niuats (estil fòrum)** - Poder respondre dins d'un comentari
@@ -145,3 +179,11 @@ Darrera actualització: 2025-11-29
 - [x] Botó "Netejar filtres"
 - [x] Soft delete amb motiu obligatori
 - [x] Històric de qüestions (resoltes/eliminades)
+- [x] Múltiples directors responsables amb checkboxes
+- [x] Opció "Tot l'Equip de Direcció" per qüestions globals
+- [x] Repositori Git i pujada a GitHub (https://github.com/mcutillas/VisioGeneral)
+- [x] Subtasques dins de qüestions amb indicador de progrés
+- [x] Sistema d'estats per subtasques (Pendent, En Curs, Completada)
+- [x] Comentaris de seguiment per subtasques
+- [x] Reorganització de la vista de detalls (descripció a columna lateral)
+- [x] Simplificació del menú de navegació

@@ -24,6 +24,8 @@ public class VisioGeneralDbContext : DbContext
     public DbSet<ComentariQuestio> ComentarisQuestio => Set<ComentariQuestio>();
     public DbSet<QuestioOrgan> QuestioOrgans => Set<QuestioOrgan>();
     public DbSet<QuestioDirector> QuestioDirectors => Set<QuestioDirector>();
+    public DbSet<Subtasca> Subtasques => Set<Subtasca>();
+    public DbSet<ComentariSubtasca> ComentarisSubtasca => Set<ComentariSubtasca>();
 
     // Context anual
     public DbSet<ContextAnual> ContextAnual => Set<ContextAnual>();
@@ -201,6 +203,46 @@ public class VisioGeneralDbContext : DbContext
                   .WithMany(d => d.QuestionsAssignades)
                   .HasForeignKey(qd => qd.DirectorId)
                   .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Subtasca
+        modelBuilder.Entity<Subtasca>(entity =>
+        {
+            entity.Property(e => e.Titol).HasMaxLength(300);
+            entity.Property(e => e.Descripcio).HasMaxLength(1000);
+            entity.Property(e => e.Estat).HasConversion<string>().HasMaxLength(20);
+
+            entity.HasOne(e => e.Questio)
+                  .WithMany(q => q.Subtasques)
+                  .HasForeignKey(e => e.QuestioId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.DirectorAssignat)
+                  .WithMany()
+                  .HasForeignKey(e => e.DirectorAssignatId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => e.QuestioId);
+            entity.HasIndex(e => new { e.QuestioId, e.Ordre });
+        });
+
+        // ComentariSubtasca
+        modelBuilder.Entity<ComentariSubtasca>(entity =>
+        {
+            entity.Property(e => e.Text).HasMaxLength(2000);
+            entity.Property(e => e.EstatEnComentari).HasConversion<string>().HasMaxLength(20);
+
+            entity.HasOne(e => e.Subtasca)
+                  .WithMany(s => s.Comentaris)
+                  .HasForeignKey(e => e.SubtascaId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Director)
+                  .WithMany()
+                  .HasForeignKey(e => e.DirectorId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => e.SubtascaId);
         });
 
         // ContextAnual
